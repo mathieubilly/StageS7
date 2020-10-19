@@ -6,6 +6,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import math
+import datetime
 
 
 # ----------------------------------------------
@@ -39,7 +40,6 @@ def get_cause(issue, table):
     for (a,b,c) in table:
         if a == issue:
             ret.append((a,b,c))
-    
     ret = filter(lambda x: x[2] > 0.9 or x[2] < -0.9, ret)
     return sorted(list(ret), key=lambda tup: tup[2], reverse=True)
     
@@ -56,7 +56,7 @@ def get_cause(issue, table):
     #return sorted_list[:cut] + sorted_list[-cut:] 
     #return sorted_list
 
-def values_by_date(date, issue):
+def values_by_date(date, issue, df_chunk):
     chunklist = []
     flag = False
     df = None
@@ -74,17 +74,55 @@ def values_by_date(date, issue):
     return chunklist
 
 
-df_chunk = pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=10000)
-chunk_list = []
-
-for chunk in df_chunk:
-    corr = chunk.corr(method='pearson')
-    tabs = corr.values
-    chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+def by_month(date, values):
     
-#print(chunk_list)
-causes = get_cause("sql_ne", chunk_list)
-print(causes)
+    chunk_list = []
+    start_date = date
+    end_date = (datetime.datetime.strptime(date, '%Y-%m-%d') - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+
+    df = values[(values['date_debut_mesure'] > end_date) & (values['date_debut_mesure'] <= start_date)]
+
+    #print(df)
+    corr = df.corr(method='pearson')
+    tabs = corr.values
+    chunk_list = chunk_list + translate(test(tabs), df.columns)
+    return get_cause("sql_ne", chunk_list)
+
+
+    #for chunk in values: 
+    #    #df = datetime.datetime.strptime(chunk[chunk["date_debut_mesure"]], "%Y-%m-%d").month == month# & datetime.datetime.strptime(chunk["date_debut_mesure"], "%Y-%m-%d").year == year]
+    #    #if df is not None:
+    #    #flag = True
+    #    chunk['date_debut_mesure'] = pd.to_datetime(chunk['date_debut_mesure'])
+    #    mask = (chunk['date_debut_mesure'] > start_date) & (chunk['date_debut_mesure'] <= end_date)
+    #    df = chunk.loc[mask]
+    #    
+    #    df = df[(df['date'] > '2000-6-1') & (df['date'] <= '2000-6-10')]
+    #    if not df.empty
+    #        corr = df.corr(method='pearson')
+    #        tabs = corr.values
+    #        chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+    #        return chunk_list
+#
+    #return chunk_list
+
+
+
+
+#df_chunk = pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=10000)
+
+df_not_chunk = pd.read_csv('ia_nokia4gj2.csv', sep=',')
+
+def data_treatment(data):
+    chunk_list = []
+    for chunk in data:
+        corr = chunk.corr(method='pearson')
+        tabs = corr.values
+        chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+
+    #print(chunk_list)
+    causes = get_cause("sql_ne", chunk_list)
+    #print(causes)
 
 def correlated_variables(L):
     ret = []
@@ -92,4 +130,4 @@ def correlated_variables(L):
         ret.append(b)
     return ret
 
-#print(correlated_variables(causes))
+print(correlated_variables(by_month("2019-09-07", df_not_chunk)))

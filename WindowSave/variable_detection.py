@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import math
 import datetime
-
+import subprocess
 
 # ----------------------------------------------
 # ----------------------------------------------
@@ -74,7 +74,7 @@ def values_by_date(date, issue, df_chunk):
     return chunklist
 
 
-def by_month(date, values):
+def by_month(date, values, issue):
     
     chunk_list = []
     start_date = date
@@ -86,34 +86,40 @@ def by_month(date, values):
     corr = df.corr(method='pearson')
     tabs = corr.values
     chunk_list = chunk_list + translate(test(tabs), df.columns)
-    return get_cause("sql_ne", chunk_list)
+    return get_cause(issue, chunk_list)
 
 
-    #for chunk in values: 
-    #    #df = datetime.datetime.strptime(chunk[chunk["date_debut_mesure"]], "%Y-%m-%d").month == month# & datetime.datetime.strptime(chunk["date_debut_mesure"], "%Y-%m-%d").year == year]
-    #    #if df is not None:
-    #    #flag = True
-    #    chunk['date_debut_mesure'] = pd.to_datetime(chunk['date_debut_mesure'])
-    #    mask = (chunk['date_debut_mesure'] > start_date) & (chunk['date_debut_mesure'] <= end_date)
-    #    df = chunk.loc[mask]
-    #    
-    #    df = df[(df['date'] > '2000-6-1') & (df['date'] <= '2000-6-10')]
-    #    if not df.empty
-    #        corr = df.corr(method='pearson')
-    #        tabs = corr.values
-    #        chunk_list = chunk_list + translate(test(tabs), chunk.columns)
-    #        return chunk_list
-#
-    #return chunk_list
+# Get the correlation coefficent list for each variable, by cell, sorted 
+def by_cell(data, cell, month_analysis, date=None):
+    chunk_list = []
+    df = None
+    for chunk in data:
+        df = chunk[chunk["ni"] == cell]
+        if not df.empty:
+            corr = df.corr(method='pearson')
+            tabs = corr.values
+            chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+            return sorted(chunk_list, key=lambda tup: tup[2], reverse=True)
+
+    raise Exception("Cell not found")
 
 
+# Get the correlation coefficent list for each variable, by group of cells, sorted 
+def by_group(data, ni_enodeb, month_analysis, date=None):
+    chunk_list = []
+    df = None
+    for chunk in data:
+        df = chunk[chunk["ni_enodeb"] == ni_enodeb]
+        if not df.empty:
+            corr = df.corr(method='pearson')
+            tabs = corr.values
+            chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+            return sorted(chunk_list, key=lambda tup: tup[2], reverse=True)
 
+    raise Exception("Cell not found")
 
-#df_chunk = pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=10000)
-
-df_not_chunk = pd.read_csv('ia_nokia4gj2.csv', sep=',')
-
-def data_treatment(data):
+# Goes through the data , does the coreraltion matrix and return only the interesting ones 
+def data_treatment(data, issue):
     chunk_list = []
     for chunk in data:
         corr = chunk.corr(method='pearson')
@@ -121,7 +127,7 @@ def data_treatment(data):
         chunk_list = chunk_list + translate(test(tabs), chunk.columns)
 
     #print(chunk_list)
-    causes = get_cause("sql_ne", chunk_list)
+    return get_cause(issue, chunk_list)
     #print(causes)
 
 def correlated_variables(L):
@@ -130,4 +136,20 @@ def correlated_variables(L):
         ret.append(b)
     return ret
 
-print(correlated_variables(by_month("2019-09-07", df_not_chunk)))
+#print(correlated_variables(by_month("2019-09-07", df_not_chunk)))
+
+def diagnostic(name, issue, month_analysis, date = None):
+    if not name.endswith('.csv'):
+        subprocess.call(['mv', name, name + '.csv'])
+
+    df = None
+    if (month_analysis):
+        if date == None:
+            raise Exception('You must enter a valid date')
+        df = pd.read_csv(name, sep=',')
+        return correlated_variables(by_month(date, df, issue))
+    else:
+        df = pd.read_csv(name, sep=',', chunksize=100000)
+        return correlated_variables(data_treatment(df, issue))
+
+print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))

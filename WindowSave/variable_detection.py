@@ -99,6 +99,7 @@ def by_cell(data, cell, month_analysis, date=None):
             corr = df.corr(method='pearson')
             tabs = corr.values
             chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+            chunk_list = filter(lambda x: x[2] > 0.9 or x[2] < -0.9, chunk_list)
             return sorted(chunk_list, key=lambda tup: tup[2], reverse=True)
 
     raise Exception("Cell not found")
@@ -114,6 +115,7 @@ def by_group(data, ni_enodeb, month_analysis, date=None):
             corr = df.corr(method='pearson')
             tabs = corr.values
             chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+            chunk_list = filter(lambda x: x[2] > 0.9 or x[2] < -0.9, chunk_list)
             return sorted(chunk_list, key=lambda tup: tup[2], reverse=True)
 
     raise Exception("Cell not found")
@@ -152,4 +154,6 @@ def diagnostic(name, issue, month_analysis, date = None):
         df = pd.read_csv(name, sep=',', chunksize=100000)
         return correlated_variables(data_treatment(df, issue))
 
-print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))
+# print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))
+print(by_cell(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 138121509, False))
+# print(by_group(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 42236, False))

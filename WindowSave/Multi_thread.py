@@ -170,6 +170,7 @@ def correlated_variables(L):
 
 #print(correlated_variables(by_month("2019-09-07", df_not_chunk)))
 
+
 def diagnostic(name, issue, month_analysis, date = None):
     if not name.endswith('.csv'):
         subprocess.call(['mv', name, name + '.csv'])
@@ -188,17 +189,41 @@ def diagnostic(name, issue, month_analysis, date = None):
 #print(by_cell(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 138121509, False))
 # print(by_group(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 42236, False))
 
+
+chunk_list = []
 def corr_tmp(chunk_list, chunk):
     corr = chunk.corr(method='pearson')
     tabs = corr.values
-    chunk_list = chunk_list + translate(test(tabs), chunk.columns)
+    chunk_list.append(translate(test(tabs), chunk.columns))
 
 
 def multi(data, issue):
-    chunk_list = []
     threads = [threading.Thread(target=corr_tmp,args=(chunk_list, chunk)) for chunk in data]
     for thread in threads: thread.start()
     for thread in threads: thread.join()
     return chunk_list
 
-print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=10000), "sql_ne"))
+# ------------------------------------------------------
+# ------------------------------------------------------
+
+def neighbours(data, cell, depth):
+    index = 0
+    ret = [cell]
+    
+    while index != len(ret) and depth != 0:
+        l = len(ret)
+        while index != l:
+            tmp = data[data['nis'] == ret[index]]['niv'].values
+            ret = ret + tmp
+            index += 1
+        depth -= 1
+
+    return ret
+
+def neighbour_analysis(data, cell, depth):
+    n = neighbours(data, cell, depth)
+    df = data[data['ni'] in n]
+    return multi(df, '')
+
+
+print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=100000), "sql_ne"))

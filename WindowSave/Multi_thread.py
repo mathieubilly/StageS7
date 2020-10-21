@@ -58,7 +58,7 @@ import subprocess
 # Get every number that is not NaN
 #
 
-def test(L):
+def test2(L):
     ret = []
     line = 0
     for j in L:
@@ -70,14 +70,33 @@ def test(L):
         line += 1 
     return ret
 
+def test(L):
+    ret = []
+    line = 0
+    lim = 0
+    for j in L:
+        idx = 0
+        column = 0
+        for i in j:
+            if column >= lim:
+                break
+            elif not math.isnan(i):
+                ret.append((line, column, i))
+            column += 1
+        line += 1
+        lim += 1 
+    return ret 
+
+
+
 #
-#Format the output (variable 1, variable 2, coefficient of correlation)
+# Format the output (variable 1, variable 2, coefficient of correlation)
 #
 
 def translate(L, columns):
     ret = []
     for i in L:
-        if (i[0] != i[1]):
+        if i[0] != i[1]:
             ret.append((columns[i[0]], columns[i[1]], i[2]))
     return ret
 #
@@ -235,7 +254,7 @@ def multi(data, issue):
     threads = [threading.Thread(target=corr_tmp,args=(chunk_list, chunk)) for chunk in data]
     for thread in threads: thread.start()
     for thread in threads: thread.join()
-    return chunk_list
+    return correlated_variables(get_cause("sql_ne", chunk_list))
 
 
 

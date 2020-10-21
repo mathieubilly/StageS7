@@ -54,7 +54,10 @@ import subprocess
 # ----------------------------------------------
 # ----------------------------------------------
 
-#get every number that is not NaN
+#
+# Get every number that is not NaN
+#
+
 def test(L):
     ret = []
     line = 0
@@ -67,16 +70,20 @@ def test(L):
         line += 1 
     return ret
 
-
+#
 #Format the output (variable 1, variable 2, coefficient of correlation)
+#
+
 def translate(L, columns):
     ret = []
     for i in L:
         if (i[0] != i[1]):
             ret.append((columns[i[0]], columns[i[1]], i[2]))
     return ret
-
+#
 # Return values that seems to be correlated with the "issue"
+#
+
 def get_cause(issue, table):
     ret = []
     for (a,b,c) in table:
@@ -85,7 +92,7 @@ def get_cause(issue, table):
     ret = filter(lambda x: x[2] > 0.9 or x[2] < -0.9, ret)
     return sorted(list(ret), key=lambda tup: tup[2], reverse=True)
 
-
+"""
 def values_by_date(date, issue, df_chunk):
     chunklist = []
     flag = False
@@ -102,7 +109,12 @@ def values_by_date(date, issue, df_chunk):
             chunk_list = chunk_list + translate(test(tabs), chunk.columns)
 
     return chunklist
+"""
 
+
+#
+# Returns the failing variable using a month worth of data and the issue 
+#
 
 def by_month(date, values, issue):
     
@@ -118,8 +130,10 @@ def by_month(date, values, issue):
     chunk_list = chunk_list + translate(test(tabs), df.columns)
     return get_cause(issue, chunk_list)
 
-
+#
 # Get the correlation coefficent list for each variable, by cell, sorted 
+#
+
 def by_cell(data, cell, month_analysis, date=None):
     chunk_list = []
     df = None
@@ -134,8 +148,10 @@ def by_cell(data, cell, month_analysis, date=None):
 
     raise Exception("Cell not found")
 
-
+#
 # Get the correlation coefficent list for each variable, by group of cells, sorted 
+#
+
 def by_group(data, ni_enodeb, month_analysis, date=None):
     chunk_list = []
     df = None
@@ -150,17 +166,25 @@ def by_group(data, ni_enodeb, month_analysis, date=None):
 
     raise Exception("Cell not found")
 
-# Goes through the data , does the coreraltion matrix and return only the interesting ones 
+#
+# Goes through the data , does the coreraltion matrix and return only
+# the interesting ones (where the coefficient is > 0.90 or < -0.90) i.e 
+# where the correlation is the strongest
+#
+
 def data_treatment(data, issue):
     chunk_list = []
     for chunk in data:
         corr = chunk.corr(method='pearson')
         tabs = corr.values
         chunk_list = chunk_list + translate(test(tabs), chunk.columns)
-
-    #print(chunk_list)
     return get_cause(issue, chunk_list)
-    #print(causes)
+
+
+#
+# Simple formating function that returns the failing variables from tuples
+#
+
 
 def correlated_variables(L):
     ret = []
@@ -168,8 +192,12 @@ def correlated_variables(L):
         ret.append(b)
     return ret
 
-#print(correlated_variables(by_month("2019-09-07", df_not_chunk)))
 
+#
+# Main function for variable diagnostic. Giving an issue, the data, whether or not 
+# we want a monthly analysis or not and a date, gives the probably failing variable
+# correlated to the issue
+#
 
 def diagnostic(name, issue, month_analysis, date = None):
     if not name.endswith('.csv'):
@@ -185,10 +213,12 @@ def diagnostic(name, issue, month_analysis, date = None):
         df = pd.read_csv(name, sep=',', chunksize=100000)
         return correlated_variables(data_treatment(df, issue))
 
-# print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))
-#print(by_cell(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 138121509, False))
-# print(by_group(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 42236, False))
 
+#
+# Computes the correlation matrix using the pearson correaltion function
+# because it includes the covariance which is very useful in our case. 
+# Returns the list of correlation under a clean way (see translate function)  
+#
 
 chunk_list = []
 def corr_tmp(chunk_list, chunk):
@@ -196,6 +226,10 @@ def corr_tmp(chunk_list, chunk):
     tabs = corr.values
     chunk_list.append(translate(test(tabs), chunk.columns))
 
+#
+# Performs analysis on the data using multithreading
+# Currently returns the lsit of variables correlation with eachothers
+#
 
 def multi(data, issue):
     threads = [threading.Thread(target=corr_tmp,args=(chunk_list, chunk)) for chunk in data]
@@ -203,8 +237,13 @@ def multi(data, issue):
     for thread in threads: thread.join()
     return chunk_list
 
-# ------------------------------------------------------
-# ------------------------------------------------------
+
+
+#
+# Get the neighbour list starting from cell, using depth to
+# know when to stop
+#
+
 
 def neighbours(data, cell, depth):
     index = 0
@@ -220,10 +259,23 @@ def neighbours(data, cell, depth):
 
     return ret
 
+#
+# Using multithreading analysis with the neighbours
+# list 
+#
+
 def neighbour_analysis(data, cell, depth):
     n = neighbours(data, cell, depth)
     df = data[data['ni'] in n]
     return multi(df, '')
 
+#
+# Tests
+#
 
+
+#print(correlated_variables(by_month("2019-09-07", df_not_chunk)))
+# print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))
+#print(by_cell(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 138121509, False))
+# print(by_group(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 42236, False))
 print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=100000), "sql_ne"))

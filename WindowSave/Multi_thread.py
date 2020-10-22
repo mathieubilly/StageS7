@@ -254,7 +254,7 @@ def multi(data, issue):
     threads = [threading.Thread(target=corr_tmp,args=(chunk_list, chunk)) for chunk in data]
     for thread in threads: thread.start()
     for thread in threads: thread.join()
-    return correlated_variables(get_cause("sql_ne", chunk_list))
+    return correlated_variables(get_cause("PDCP_SDU_VOL_DL_BYG_RS_Cell", chunk_list[0]))
 
 
 
@@ -297,4 +297,4 @@ def neighbour_analysis(data, cell, depth):
 # print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))
 #print(by_cell(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 138121509, False))
 # print(by_group(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 42236, False))
-print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=100000), "sql_ne"))
+print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=50000), "sql_ne"))

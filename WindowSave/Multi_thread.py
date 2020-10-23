@@ -108,8 +108,9 @@ def get_cause(issue, table):
     for (a,b,c) in table:
         if a == issue:
             ret.append((a,b,c))
-    ret = filter(lambda x: x[2] > 0.9 or x[2] < -0.9, ret)
-    return sorted(list(ret), key=lambda tup: tup[2], reverse=True)
+    ret = filter(lambda x: x[2] > 0.8 or x[2] < -0.8, ret)
+    return ret
+    # return sorted(list(ret), key=lambda tup: tup[2], reverse=True)
 
 """
 def values_by_date(date, issue, df_chunk):
@@ -287,6 +288,20 @@ def neighbour_analysis(data, cell, depth):
     n = neighbours(data, cell, depth)
     df = data[data['ni'] in n]
     return multi(df, '')
+
+
+#
+# Slow or fast degradation day_file crossed with week_file
+# Returns the delta between the week_value and the day_value
+#
+
+def days_week(day_file, week_file, date, to_check):
+    days = pd.read_csv(day_file, sep=',', chunksize=50000)
+    weeks = pd.read_csv(week_file, sep=',', chunksize=50000)
+
+    return days[days['date_debut_mesure'] == date][to_check] - weeks[weeks['date_debut_mesure'] == date][to_check]
+
+
 
 #
 # Tests

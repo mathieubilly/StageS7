@@ -302,6 +302,24 @@ def days_week(day_file, week_file, date, to_check):
     return days[days['date_debut_mesure'] == date][to_check] - weeks[weeks['date_debut_mesure'] == date][to_check]
 
 
+#
+# Alarms
+#
+
+def visualizer_alarms():
+    res = []
+    c = 0
+    cols = pd.read_csv('export_alarms_uro.csv', nrows=1).columns
+    return cols[0]
+ #   df = pd.read_csv('export_alarms_uro.csv', sep='\t', chunksize=5000, engine='python', error_bad_lines=False)
+ #   for chunk in df:
+ #       print(c)
+ #       c += 1
+ #       res.append(chunk.columns) #chunk[chunk['specific_problem']]
+ #   
+ #   return list(dict.fromkeys(res))
+
+
 
 #
 # Tests
@@ -312,4 +330,6 @@ def days_week(day_file, week_file, date, to_check):
 # print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))
 #print(by_cell(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 138121509, False))
 # print(by_group(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 42236, False))
-print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=50000), "sql_ne"))
+# print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=50000), "sql_ne"))
+
+print(visualizer_alarms())

@@ -311,7 +311,7 @@ def visualizer_alarms():
     c = 0
     cols = pd.read_csv('export_alarms_uro.csv', nrows=1).columns
     return cols[0]
- #   df = pd.read_csv('export_alarms_uro.csv', sep='\t', chunksize=5000, engine='python', error_bad_lines=False)
+ #   df = pd.read_csv('export_alarms_uro.csv', sep='\t', chunksize=5000, engine='python', warn_bad_lines=True, error_bad_lines=False)
  #   for chunk in df:
  #       print(c)
  #       c += 1

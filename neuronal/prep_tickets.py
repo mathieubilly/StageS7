@@ -29,7 +29,7 @@ def ticket_by_date(date, tickets, params):
             flag = True
             return df
     '''
-    df_joined = df_tickets.merge(df_params, left_on='nidt_noeud', right_on='nidt_noeud', how='inner')
+    df_joined = df_tickets.merge(df_params, left_on='nidt_noeud', right_on='nidt_noeud', how='outer')
 
     # df = df_joined[df_joined['date_de_creation'] == date]
 
@@ -40,13 +40,4 @@ def ticket_by_date(date, tickets, params):
     return df_joined
 
 
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_04_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_05_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_06_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_07_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_08_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_09_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_10_2020.csv', 'osiris_params.csv'))
-# print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_11_2019.csv', 'osiris_params.csv'))
-print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_12_2019.csv', 'osiris_params.csv'))
+print(ticket_by_date("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv'))

@@ -330,6 +330,6 @@ def visualizer_alarms():
 # print(diagnostic('ia_nokia4gj2.csv', "sql_ne", False))
 #print(by_cell(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 138121509, False))
 # print(by_group(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=1000), 42236, False))
-# print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=50000), "sql_ne"))
+print(multi(pd.read_csv('ia_nokia4gj2.csv', sep=',', chunksize=50000), "sql_ne"))
 
-print(visualizer_alarms())
+# print(visualizer_alarms())

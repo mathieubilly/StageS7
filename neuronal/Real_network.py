@@ -1,6 +1,7 @@
 from keras.models import Sequential
 from keras.utils import np_utils
 from keras.layers.core import Dense, Activation, Dropout
+from sklearn import datasets
 
 import pandas as pd
 import numpy as np
@@ -12,6 +13,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     df_tickets = pd.read_csv(tickets, sep='##OS##', engine='python', chunksize=chunks)
     df_tickets.columns = ['id', 'date_de_creation', 'date_de_restoration', 'date_de_fix', 'description_du_ticket', 'date_commentaire', 'commentaires', 'label', 'nidt_noeud', 'elem', 'status_code', 'status']
     
+    
     # Dataframe params
     df_params = pd.read_csv(params, sep=';', engine='python', chunksize=chunks)
     df_params.columns = ['Field', 't', 'techno', 'date', 'Ur', 'no_ur', 'omc', 'code_dr', 'nom_dr', 'Plaque', 'zone_MKT', 'nom_omc', 'mfs', 'nom_pcu', 'bsc', 'rnc', 'no_rnc', 'ni_rnc', 'site', 'no_bsc', 'ni_bsc', 'no_site', 'ni_site', 'no_secteur', 'secteur', 'no_bts', 'bts', 'lac', 'ci', 'nidt', 'no_noeud', 'nidt_noeud', 'ni', 'date_fn8', 'date_mest', 'Eteint', 'nci', 'locked', 'barred', 'ms_tx_pwr_max_cch', 'ncc', 'bcc', 'bcch', 'nodeb', 'nodebid', 'gprs', 'edge_actif', 'bts_power', 'nb_pdtch_statiques', 'max_pkt_radio_type', 'nb_pdch_tot', 'nb_pdch_stat', 'sac', 'hsdpa', 'hsupa', 'TGV', 'ni_msc', 'nom_msc', 'FreqDownlink', 'tdb', 'nidt_msc', 'Template', 'Bande', 'cid', 'nb_bandes', 'objQoS', 'zone_ARCEP', 'txt_bandeau', 'do', 'nom_secteur']
@@ -19,21 +21,34 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     # Dataframe variables
     df_variables = pd.read_csv(variables, sep=',', engine='python', chunksize=chunks)
 
+    labels = []
     for tickets, params, variables in zip(df_tickets, df_params, df_variables):
         tickets.columns = ['id', 'date_de_creation', 'date_de_restoration', 'date_de_fix', 'description_du_ticket', 'date_commentaire', 'commentaires', 'label', 'nidt_noeud', 'elem', 'status_code', 'status']
         params.columns = ['Field', 't', 'techno', 'date', 'Ur', 'no_ur', 'omc', 'code_dr', 'nom_dr', 'Plaque', 'zone_MKT', 'nom_omc', 'mfs', 'nom_pcu', 'bsc', 'rnc', 'no_rnc', 'ni_rnc', 'site', 'no_bsc', 'ni_bsc', 'no_site', 'ni_site', 'no_secteur', 'secteur', 'no_bts', 'bts', 'lac', 'ci', 'nidt', 'no_noeud', 'nidt_noeud', 'ni', 'date_fn8', 'date_mest', 'Eteint', 'nci', 'locked', 'barred', 'ms_tx_pwr_max_cch', 'ncc', 'bcc', 'bcch', 'nodeb', 'nodebid', 'gprs', 'edge_actif', 'bts_power', 'nb_pdtch_statiques', 'max_pkt_radio_type', 'nb_pdch_tot', 'nb_pdch_stat', 'sac', 'hsdpa', 'hsupa', 'TGV', 'ni_msc', 'nom_msc', 'FreqDownlink', 'tdb', 'nidt_msc', 'Template', 'Bande', 'cid', 'nb_bandes', 'objQoS', 'zone_ARCEP', 'txt_bandeau', 'do', 'nom_secteur']
-        
+
+        # labels = tickets['label']
+        for word in tickets.label.unique():
+            if word not in labels:
+                labels.append(word)
+
         # Dataframe tickets + params
         df_joined = pd.merge(tickets, params, how='outer', on='nidt_noeud')
         df_joined = df_joined.fillna(0)
 
         df_double_joined = pd.merge(df_joined, variables, how='outer', on='ni')
 
+        X_train, X_test = sklearn.train_test_split(df_double_joined)
+
+        y_train = np_utils.to_categorical(labels)
+
+    print(set(res))
     ret = "Everything went well"
     return ret
 
+print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
 
 
+'''
 # Read the preproccessed data 
 
 train = pd.read_csv('train.csv')
@@ -41,10 +56,6 @@ labels = train.iloc[:,0].values.astype('int32')
 X_train = (train.iloc[:,1:].values).astype('float32')
 X_test = (pd.read_csv('test.csv').values).astype('float32')
 
-print(labels)
-print(labels)
-print(labels)
-print(labels)
 
 # Convert list of labels to binary class matrix
 
@@ -86,7 +97,7 @@ preds = model.predict_classes(X_test, verbose=0)
 
 print(preds)
 
-'''
+
 def write_preds(preds, fname):
     pd.DataFrame({"ImageId": list(range(1,len(preds)+1)), "Label": preds}).to_csv(fname, index=False, header=True)
 

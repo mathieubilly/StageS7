@@ -1,10 +1,13 @@
+
 from keras.models import Sequential
 from keras.utils import np_utils
 from keras.layers.core import Dense, Activation, Dropout
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 
+#import opencv2
 import pandas as pd
 import numpy as np
+import math
 
 def ticket_by_date_chunks(date, tickets, params, variables):
     
@@ -34,7 +37,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
         # Dataframe tickets + params
         df_joined = pd.merge(tickets, params, how='outer', on='nidt_noeud')
-        df_joined = df_joined.fillna(0)
+        df_joined = df_joined.fillna(1)
 
         # Merged 3 datasets
         df_double_joined = pd.merge(df_joined, variables, how='outer', on='ni')
@@ -43,21 +46,30 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     full_data = pd.concat(chunk_list)
 
+    full_data.replace(to_replace="(\"?[0-9]*[a-zA-Z '()]+[,.]*([0-9]*[a-zA-Z '.,()]*)*\"?|\"?([0-9]*[-:][0-9]*)+\"?)", value=r"1", regex=True, inplace=True)
+    #full_data.replace(to_replace="(\"?([0-9]*[-:][0-9]*)+\"?)", value=r"\1", regex=True, inplace=True)
 
-    print('Full data concatenated')        
+    full_data.apply(pd.to_numeric)
+
+    print('Full data concatenated')
+    print('Every String replaced by 1 and passed to numeric')        
     
     # Splitting train set and test set
-    
-    X_train, X_test = train_test_split(full_data)
+
+    X_train = full_data.iloc[50000:50151]
+    X_test = full_data.iloc[200000:200151]
+    # X_train, X_test = train_test_split(full_data)
     # X_test = X_test.values.astype(float32)
     # X_train = X_train.values.astype(float32)
 
-print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
+#print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
 
-'''
+
     print('data splited')
     # Create labels
-    y_train = np_utils.to_categorical(labels)
+
+    labels_2 = list(range(0,len(labels)))
+    ytrain = np_utils.to_categorical(labels_2)    
 
     print('labels created')
     scale = np.max(X_train)
@@ -69,7 +81,9 @@ print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', '
     X_test -= mean
 
     input_dim = X_train.shape[1]
-    nb_classes = y_train.shape[1]
+    print(input_dim)
+
+    nb_classes = ytrain.shape[1]
 
     print('preprocessing data')
 
@@ -89,11 +103,11 @@ print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', '
     model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
     print("Training...")
-    history = model.fit(X_train, y_train, epochs=10, batch_size=16, validation_split=0.1, verbose=2)
+    history = model.fit(X_train, ytrain, epochs=10, batch_size=16, validation_split=0.1, verbose=2)
 
-print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_01_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
+print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
 
-
+'''
 
 # Read the preproccessed data 
 

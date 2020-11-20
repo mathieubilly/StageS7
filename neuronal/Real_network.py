@@ -43,21 +43,25 @@ def ticket_by_date_chunks(date, tickets, params, variables):
         df_double_joined = pd.merge(df_joined, variables, how='outer', on='ni')
 
         chunk_list.append(df_double_joined)
+        break
 
     full_data = pd.concat(chunk_list)
 
-    full_data.replace(to_replace="(\"?[0-9]*[a-zA-Z '()]+[,.]*([0-9]*[a-zA-Z '.,()]*)*\"?|\"?([0-9]*[-:][0-9]*)+\"?)", value=r"1", regex=True, inplace=True)
+    print("Data is concaneted and ready to be replaced")
+    #full_data = np.where(type(full_data) == str, 1, full_data)
+    full_data.replace(to_replace="(\"?[0-9]*[a-zA-Z '()]+[,.]*([0-9]*[a-zA-Z '.,()]*)*\"?)|(\"?([0-9]*[-:][0-9]*)+\"?)", value='1', regex=True)
     #full_data.replace(to_replace="(\"?([0-9]*[-:][0-9]*)+\"?)", value=r"\1", regex=True, inplace=True)
-
-    full_data.apply(pd.to_numeric)
+    
+    full_data = pd.to_numeric(full_data, downcast='float')
+    #full_data.apply(pd.to_numeric)
 
     print('Full data concatenated')
     print('Every String replaced by 1 and passed to numeric')        
     
     # Splitting train set and test set
 
-    X_train = full_data.iloc[50000:50151]
-    X_test = full_data.iloc[200000:200151]
+    X_train = full_data.iloc[0:4000]
+    X_test = full_data.iloc[4567:5000]
     # X_train, X_test = train_test_split(full_data)
     # X_test = X_test.values.astype(float32)
     # X_train = X_train.values.astype(float32)

@@ -49,10 +49,11 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     print("Data is concaneted and ready to be replaced")
     #full_data = np.where(type(full_data) == str, 1, full_data)
-    full_data.replace(to_replace="(\"?[0-9]*[a-zA-Z '()]+[,.]*([0-9]*[a-zA-Z '.,()]*)*\"?)|(\"?([0-9]*[-:][0-9]*)+\"?)", value='1', regex=True)
+    #full_data.replace(to_replace="(\"?[0-9]*[a-zA-Z '()]+[,.]*([0-9]*[a-zA-Z '.,()]*)*\"?)|(\"?([0-9]*[-:][0-9]*)+\"?)", value="1", regex=True)
     #full_data.replace(to_replace="(\"?([0-9]*[-:][0-9]*)+\"?)", value=r"\1", regex=True, inplace=True)
-    
-    full_data = pd.to_numeric(full_data, downcast='float')
+   
+    full_data = full_data.apply(pd.to_numeric, errors='coerce')
+    full_data.fillna(1)
     #full_data.apply(pd.to_numeric)
 
     print('Full data concatenated')
@@ -76,39 +77,39 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     ytrain = np_utils.to_categorical(labels_2)    
 
     print('labels created')
-    scale = np.max(X_train)
-    X_train /= scale
-    X_test /= scale
-
-    mean = np.std(X_train)
-    X_train -= mean
-    X_test -= mean
-
+    X_train = np_utils.normalize(X_train)
     input_dim = X_train.shape[1]
-    print(input_dim)
-
+    #print(input_dim)
+    #print(X_train)
     nb_classes = ytrain.shape[1]
 
+    print(nb_classes)
+    #print('first shape X: ', X_train.shape[0])
+    #print('first shjape Y: ', ytrain.shape[0])
+    
     print('preprocessing data')
 
     model = Sequential()
-    model.add(Dense(128, input_dim=input_dim))
+    model.add(Dense(256, input_dim=input_dim))
     model.add(Activation('relu'))
     model.add(Dropout(0.15))
-    model.add(Dense(128))
+    model.add(Dense(256))
     model.add(Activation('relu'))
     model.add(Dropout(0.15))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
-   
+
+    np.array(X_train).reshape(1,-1)
+    np.array(ytrain).reshape(1,-1)
+    #X_train = X_train[0:38]   
     print('model created')
 
-   # we'll use categorical xent for the loss, and RMSprop as the optimizer
-    model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+    #we'll use categorical xent for the loss, and RMSprop as the optimizer
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     print("Training...")
     history = model.fit(X_train, ytrain, epochs=10, batch_size=16, validation_split=0.1, verbose=2)
-
+    
 print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
 
 '''

@@ -1,8 +1,13 @@
 
+from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.utils import np_utils
+from keras.wrappers.scikit_learn import KerasClassifier
 from keras.layers.core import Dense, Activation, Dropout
+
+#import sklearn
 #from sklearn.model_selection import train_test_split
+#from sklearn.metrics import mean_squared_error
 
 #import opencv2
 import pandas as pd
@@ -57,27 +62,35 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     #full_data.apply(pd.to_numeric)
 
     print('Full data concatenated')
+    labels_2 = list(range(0, len(labels)))
+    y_train = np_utils.to_categorical(labels_2, num_classes=len(labels_2))
+
     print('Every String replaced by 1 and passed to numeric')        
     
     # Splitting train set and test set
 
     X_train = full_data.iloc[0:4000]
     X_test = full_data.iloc[4567:5000]
-    # X_train, X_test = train_test_split(full_data)
+    labels_2 = list(range(0,len(labels)))
+    #X_train = full_data[0:4000]
+    #X_test = full_data[4001:4500]
+
+    #, X_test, y_train, y_test = train_test_split(full_data, labels_2, test_size=0.30, random_state=40)
+
+    #ytrain = to_categorical(y_train)
+    #y_test = to_categorical(y_test)
+
     # X_test = X_test.values.astype(float32)
     # X_train = X_train.values.astype(float32)
-
-#print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
-
 
     print('data splited')
     # Create labels
 
-    labels_2 = list(range(0,len(labels)))
+    #ytrain = labels_2
     ytrain = np_utils.to_categorical(labels_2)    
 
     print('labels created')
-    X_train = np_utils.normalize(X_train)
+    #X_train = np_utils.normalize(X_train)
     input_dim = X_train.shape[1]
     #print(input_dim)
     #print(X_train)
@@ -88,7 +101,12 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     #print('first shjape Y: ', ytrain.shape[0])
     
     print('preprocessing data')
-
+    #X_train = X_train[0:38]
+    X_train = X_train.fillna(1)
+    #ytrain = ytrain.reshape(1, 38, 2)   
+    print(X_train.shape)
+    print('model created')
+    
     model = Sequential()
     model.add(Dense(256, input_dim=input_dim))
     model.add(Activation('relu'))
@@ -98,17 +116,16 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     model.add(Dropout(0.15))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
-
-    np.array(X_train).reshape(1,-1)
-    np.array(ytrain).reshape(1,-1)
-    #X_train = X_train[0:38]   
-    print('model created')
-
+    
+    print("Xtrain dims ar [", X_train.shape[0],X_train.shape[1],"]")     
+    print("ytrain dims ar [", ytrain.shape[0],ytrain.shape[1],"]")  
+   
     #we'll use categorical xent for the loss, and RMSprop as the optimizer
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     print("Training...")
-    history = model.fit(X_train, ytrain, epochs=10, batch_size=16, validation_split=0.1, verbose=2)
+    return model.predict_on_batch(X_train)   
+#model.fit(X_train, ytrain, epochs=20, batch_size=16, validation_split=0.1, verbose=2)
     
 print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
 

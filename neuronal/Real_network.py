@@ -1,9 +1,11 @@
 
+import keras
 from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.utils import np_utils
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.layers.core import Dense, Activation, Dropout
+from keras.optimizers import SGD
 
 #import sklearn
 #from sklearn.model_selection import train_test_split
@@ -13,6 +15,21 @@ from keras.layers.core import Dense, Activation, Dropout
 import pandas as pd
 import numpy as np
 import math
+
+def write_matrix(m):
+    f = open("output.txt", "a")
+    for i in m:
+        for j in i:
+            f.write(" ")
+            f.write(str(j))
+    
+    f.close()
+
+def sublists(l):
+    res = []
+    for i in l:
+        res.append([i])
+    return res
 
 def ticket_by_date_chunks(date, tickets, params, variables):
     
@@ -53,78 +70,71 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     full_data = pd.concat(chunk_list)
 
     print("Data is concaneted and ready to be replaced")
-    #full_data = np.where(type(full_data) == str, 1, full_data)
-    #full_data.replace(to_replace="(\"?[0-9]*[a-zA-Z '()]+[,.]*([0-9]*[a-zA-Z '.,()]*)*\"?)|(\"?([0-9]*[-:][0-9]*)+\"?)", value="1", regex=True)
-    #full_data.replace(to_replace="(\"?([0-9]*[-:][0-9]*)+\"?)", value=r"\1", regex=True, inplace=True)
    
     full_data = full_data.apply(pd.to_numeric, errors='coerce')
-    full_data.fillna(1)
+    full_data = full_data.fillna(1)
     #full_data.apply(pd.to_numeric)
 
     print('Full data concatenated')
-    labels_2 = list(range(0, len(labels)))
-    y_train = np_utils.to_categorical(labels_2, num_classes=len(labels_2))
+    #labels_2 = list(range(0, len(labels)))
+    #labels_2 = sublists(labels_2)
+    
+
+
+    #print(y_train.shape[0])
 
     print('Every String replaced by 1 and passed to numeric')        
+
+    set_size = 50000
+    full_data_matrix = full_data.values
+    X_train = full_data_matrix[0:set_size]
     
-    # Splitting train set and test set
+    labels_2 = np.random.randint(38, size=(set_size, 1))
 
-    X_train = full_data.iloc[0:4000]
-    X_test = full_data.iloc[4567:5000]
-    labels_2 = list(range(0,len(labels)))
-    #X_train = full_data[0:4000]
-    #X_test = full_data[4001:4500]
+    X_test = full_data_matrix[50001:55000]
+    ytest = keras.utils.to_categorical(labels_2, num_classes=38)
 
-    #, X_test, y_train, y_test = train_test_split(full_data, labels_2, test_size=0.30, random_state=40)
-
-    #ytrain = to_categorical(y_train)
-    #y_test = to_categorical(y_test)
-
-    # X_test = X_test.values.astype(float32)
-    # X_train = X_train.values.astype(float32)
+    y_train = keras.utils.to_categorical(labels_2, num_classes=38)
+    
+    #X_train = np.random.random((1000,20))
+    #X_test = np.random.random((100,20))
 
     print('data splited')
-    # Create labels
-
-    #ytrain = labels_2
-    ytrain = np_utils.to_categorical(labels_2)    
 
     print('labels created')
-    #X_train = np_utils.normalize(X_train)
     input_dim = X_train.shape[1]
-    #print(input_dim)
-    #print(X_train)
-    nb_classes = ytrain.shape[1]
 
-    print(nb_classes)
+    nb_classes = 38
     #print('first shape X: ', X_train.shape[0])
     #print('first shjape Y: ', ytrain.shape[0])
     
     print('preprocessing data')
-    #X_train = X_train[0:38]
-    X_train = X_train.fillna(1)
-    #ytrain = ytrain.reshape(1, 38, 2)   
-    print(X_train.shape)
+  
+    #print(X_train.shape)
     print('model created')
     
     model = Sequential()
-    model.add(Dense(256, input_dim=input_dim))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.15))
-    model.add(Dense(256))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.15))
-    model.add(Dense(nb_classes))
-    model.add(Activation('softmax'))
+    model.add(Dense(256, activation='relu', input_dim=input_dim))
+    model.add(Dropout(0.5))
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(nb_classes, activation='softmax'))
     
-    print("Xtrain dims ar [", X_train.shape[0],X_train.shape[1],"]")     
-    print("ytrain dims ar [", ytrain.shape[0],ytrain.shape[1],"]")  
+    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    #print("Xtrain dims ar [", X_train.shape[0],X_train.shape[1],"]")     
+    #print("ytrain dims ar [", ytrain.shape[0],ytrain.shape[1],"]")  
    
-    #we'll use categorical xent for the loss, and RMSprop as the optimizer
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
-    print("Training...")
-    return model.predict_on_batch(X_train)   
+    #res = model.predict_on_batch(X_train)   
+    #write_matrix(res)
+    
+    
+    model.fit(X_train, y_train, epochs=1000, batch_size=128)
+    #score = model.evaluate(X_test, ytest, batch_size=128)      
+
+    return "Everything went well"
+
 #model.fit(X_train, ytrain, epochs=20, batch_size=16, validation_split=0.1, verbose=2)
     
 print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))

@@ -25,6 +25,16 @@ def write_matrix(m):
     
     f.close()
 
+def check_matrix(M):
+    ret = []
+    tmp = M[0][0]
+    for i in M:
+        for j in i:
+            if j != tmp:
+                print(j)
+                ret.append(j)
+    return len(ret) 
+
 def sublists(l):
     res = []
     for i in l:
@@ -33,7 +43,7 @@ def sublists(l):
 
 def ticket_by_date_chunks(date, tickets, params, variables):
     
-    chunks = 25000
+    chunks = 50000
     # Dataframe tickets
     df_tickets = pd.read_csv(tickets, sep='##OS##', engine='python', chunksize=chunks)
     df_tickets.columns = ['id', 'date_de_creation', 'date_de_restoration', 'date_de_fix', 'description_du_ticket', 'date_commentaire', 'commentaires', 'label', 'nidt_noeud', 'elem', 'status_code', 'status']
@@ -85,13 +95,14 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     print('Every String replaced by 1 and passed to numeric')        
 
-    set_size = 50000
+    set_size = 150000
     full_data_matrix = full_data.values
-    X_train = full_data_matrix[0:set_size]
+    #X_train = full_data_matrix[0:set_size]
     
+    X_train = full_data_matrix
     labels_2 = np.random.randint(38, size=(set_size, 1))
 
-    X_test = full_data_matrix[50001:55000]
+    X_test = full_data_matrix[set_size + 1:set_size + 10000]
     ytest = keras.utils.to_categorical(labels_2, num_classes=38)
 
     y_train = keras.utils.to_categorical(labels_2, num_classes=38)
@@ -128,9 +139,10 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     #res = model.predict_on_batch(X_train)   
     #write_matrix(res)
+
+    #print(check_matrix(X_train[80000:81000]))    
     
-    
-    model.fit(X_train, y_train, epochs=1000, batch_size=128)
+    model.fit(X_train, y_train, epochs=100, batch_size=128)
     #score = model.evaluate(X_test, ytest, batch_size=128)      
 
     return "Everything went well"

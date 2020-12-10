@@ -95,14 +95,16 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     print('Every String replaced by 1 and passed to numeric')        
 
-    set_size = 150000
+    set_size = 149000
     full_data_matrix = full_data.values
     #X_train = full_data_matrix[0:set_size]
-    
-    X_train = full_data_matrix
+   
+    len_data = len(full_data_matrix)
+ 
+    X_train = full_data_matrix[:len_data - 1000]
     labels_2 = np.random.randint(38, size=(set_size, 1))
 
-    X_test = full_data_matrix[set_size + 1:set_size + 10000]
+    X_test = full_data_matrix[len_data - 1000:]
     ytest = keras.utils.to_categorical(labels_2, num_classes=38)
 
     y_train = keras.utils.to_categorical(labels_2, num_classes=38)
@@ -144,10 +146,13 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     #print(check_matrix(X_train[80000:81000]))    
     
-    model.fit(X_train, y_train, epochs=100, batch_size=128)
+    model.fit(X_train, y_train, epochs=20, batch_size=128)
     #score = model.evaluate(X_test, ytest, batch_size=128)      
 
-    return "Everything went well"
+    ynew = model.predict_classes(X_test)
+
+    #print(X_test)
+    return ynew
 
 #model.fit(X_train, ytrain, epochs=20, batch_size=16, validation_split=0.1, verbose=2)
     

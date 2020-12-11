@@ -127,11 +127,11 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     print('model created')
     
     model = Sequential()
-    model.add(Dense(256, activation='relu', input_dim=input_dim))
+    model.add(Dense(256, activation='tanh', input_dim=input_dim))
     model.add(Dropout(0.5))
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256, activation='tanh'))
     model.add(Dropout(0.5))
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256, activation='tanh'))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes, activation='softmax'))
     
@@ -146,7 +146,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     #print(check_matrix(X_train[80000:81000]))    
     
-    model.fit(X_train, y_train, epochs=20, batch_size=128)
+    model.fit(X_train, y_train, epochs=200, batch_size=64)
     #score = model.evaluate(X_test, ytest, batch_size=128)      
 
     ynew = model.predict_classes(X_test)

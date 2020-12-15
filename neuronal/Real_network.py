@@ -146,13 +146,17 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     #print(check_matrix(X_train[80000:81000]))    
     
-    model.fit(X_train, y_train, epochs=200, batch_size=64)
+    model.fit(X_train, y_train, epochs=100, batch_size=64, verbose=0)
     #score = model.evaluate(X_test, ytest, batch_size=128)      
 
     ynew = model.predict_classes(X_test)
-
+    
+    res = []
+    
+    for s in ynew:
+        res.append(labels[s])
     #print(X_test)
-    return ynew
+    return res
 
 #model.fit(X_train, ytrain, epochs=20, batch_size=16, validation_split=0.1, verbose=2)
     

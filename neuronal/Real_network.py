@@ -79,6 +79,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     full_data = pd.concat(chunk_list)
 
+    print(len(labels))
     print("Data is concaneted and ready to be replaced")
    
     full_data = full_data.apply(pd.to_numeric, errors='coerce')
@@ -102,12 +103,12 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     len_data = len(full_data_matrix)
  
     X_train = full_data_matrix[:len_data - 1000]
-    labels_2 = np.random.randint(38, size=(set_size, 1))
+    labels_2 = np.random.randint(len(labels), size=(set_size, 1))
 
     X_test = full_data_matrix[len_data - 1000:]
-    ytest = keras.utils.to_categorical(labels_2, num_classes=38)
+    ytest = keras.utils.to_categorical(labels_2, num_classes=len(labels))
 
-    y_train = keras.utils.to_categorical(labels_2, num_classes=38)
+    y_train = keras.utils.to_categorical(labels_2, num_classes=len(labels))
     
     #X_train = np.random.random((1000,20))
     #X_test = np.random.random((100,20))
@@ -117,7 +118,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     print('labels created')
     input_dim = X_train.shape[1]
 
-    nb_classes = 38
+    nb_classes = len(labels)
     #print('first shape X: ', X_train.shape[0])
     #print('first shjape Y: ', ytrain.shape[0])
     
@@ -146,7 +147,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     #print(check_matrix(X_train[80000:81000]))    
     
-    model.fit(X_train, y_train, epochs=100, batch_size=64, verbose=0)
+    model.fit(X_train, y_train, epochs=100, batch_size=128)
     #score = model.evaluate(X_test, ytest, batch_size=128)      
 
     ynew = model.predict_classes(X_test)
@@ -160,7 +161,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
 #model.fit(X_train, ytrain, epochs=20, batch_size=16, validation_split=0.1, verbose=2)
     
-print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_03_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
+print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_05_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
 
 '''
 

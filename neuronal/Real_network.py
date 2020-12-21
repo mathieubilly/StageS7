@@ -147,7 +147,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     #print(check_matrix(X_train[80000:81000]))    
     
-    model.fit(X_train, y_train, epochs=100, batch_size=128)
+    model.fit(X_train, y_train, epochs=100, batch_size=64)
     #score = model.evaluate(X_test, ytest, batch_size=128)      
 
     ynew = model.predict_classes(X_test)

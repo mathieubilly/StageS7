@@ -41,15 +41,21 @@ def sublists(l):
         res.append([i])
     return res
 
-def ticket_by_date_chunks(date, tickets, params, variables):
+def ticket_by_date_chunks(date, tickets, tickets2, tickets3, params, variables):
     
     chunks = 50000
     # Dataframe tickets
     df_tickets = pd.read_csv(tickets, sep='##OS##', engine='python', chunksize=chunks)
     df_tickets.columns = ['id', 'date_de_creation', 'date_de_restoration', 'date_de_fix', 'description_du_ticket', 'date_commentaire', 'commentaires', 'label', 'nidt_noeud', 'elem', 'status_code', 'status']
     
+    df_tickets2 = pd.read_csv(tickets2, sep='##OS##', engine='python', chunksize=chunks)
+    df_tickets2.columns = ['id', 'date_de_creation', 'date_de_restoration', 'date_de_fix', 'description_du_ticket', 'date_commentaire', 'commentaires', 'label', 'nidt_noeud', 'elem', 'status_code', 'status']
     
-    # Dataframe params
+    df_tickets3 = pd.read_csv(tickets3, sep='##OS##', engine='python', chunksize=chunks)
+    df_tickets3.columns = ['id', 'date_de_creation', 'date_de_restoration', 'date_de_fix', 'description_du_ticket', 'date_commentaire', 'commentaires', 'label', 'nidt_noeud', 'elem', 'status_code', 'status']
+    
+
+     # Dataframe params
     df_params = pd.read_csv(params, sep=';', engine='python', chunksize=chunks)
     df_params.columns = ['Field', 't', 'techno', 'date', 'Ur', 'no_ur', 'omc', 'code_dr', 'nom_dr', 'Plaque', 'zone_MKT', 'nom_omc', 'mfs', 'nom_pcu', 'bsc', 'rnc', 'no_rnc', 'ni_rnc', 'site', 'no_bsc', 'ni_bsc', 'no_site', 'ni_site', 'no_secteur', 'secteur', 'no_bts', 'bts', 'lac', 'ci', 'nidt', 'no_noeud', 'nidt_noeud', 'ni', 'date_fn8', 'date_mest', 'Eteint', 'nci', 'locked', 'barred', 'ms_tx_pwr_max_cch', 'ncc', 'bcc', 'bcch', 'nodeb', 'nodebid', 'gprs', 'edge_actif', 'bts_power', 'nb_pdtch_statiques', 'max_pkt_radio_type', 'nb_pdch_tot', 'nb_pdch_stat', 'sac', 'hsdpa', 'hsupa', 'TGV', 'ni_msc', 'nom_msc', 'FreqDownlink', 'tdb', 'nidt_msc', 'Template', 'Bande', 'cid', 'nb_bandes', 'objQoS', 'zone_ARCEP', 'txt_bandeau', 'do', 'nom_secteur']
 
@@ -58,7 +64,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     labels = []
     chunk_list = []
-    for tickets, params, variables in zip(df_tickets, df_params, df_variables):
+    for tickets, tickets2, tickets3, params, variables in zip(df_tickets, df_tickets2, df_tickets3, df_params, df_variables):
         tickets.columns = ['id', 'date_de_creation', 'date_de_restoration', 'date_de_fix', 'description_du_ticket', 'date_commentaire', 'commentaires', 'label', 'nidt_noeud', 'elem', 'status_code', 'status']
         params.columns = ['Field', 't', 'techno', 'date', 'Ur', 'no_ur', 'omc', 'code_dr', 'nom_dr', 'Plaque', 'zone_MKT', 'nom_omc', 'mfs', 'nom_pcu', 'bsc', 'rnc', 'no_rnc', 'ni_rnc', 'site', 'no_bsc', 'ni_bsc', 'no_site', 'ni_site', 'no_secteur', 'secteur', 'no_bts', 'bts', 'lac', 'ci', 'nidt', 'no_noeud', 'nidt_noeud', 'ni', 'date_fn8', 'date_mest', 'Eteint', 'nci', 'locked', 'barred', 'ms_tx_pwr_max_cch', 'ncc', 'bcc', 'bcch', 'nodeb', 'nodebid', 'gprs', 'edge_actif', 'bts_power', 'nb_pdtch_statiques', 'max_pkt_radio_type', 'nb_pdch_tot', 'nb_pdch_stat', 'sac', 'hsdpa', 'hsupa', 'TGV', 'ni_msc', 'nom_msc', 'FreqDownlink', 'tdb', 'nidt_msc', 'Template', 'Bande', 'cid', 'nb_bandes', 'objQoS', 'zone_ARCEP', 'txt_bandeau', 'do', 'nom_secteur']
 
@@ -66,6 +72,10 @@ def ticket_by_date_chunks(date, tickets, params, variables):
         for word in tickets.label.unique():
             if word not in labels:
                 labels.append(word)
+
+
+        tickets = tickets.append(tickets2)
+        tickets = tickets.append(tickets3)
 
         # Dataframe tickets + params
         df_joined = pd.merge(tickets, params, how='outer', on='nidt_noeud')
@@ -77,7 +87,10 @@ def ticket_by_date_chunks(date, tickets, params, variables):
         chunk_list.append(df_double_joined)
         break
 
+    print(labels)
+
     full_data = pd.concat(chunk_list)
+
 
     print(len(labels))
     print("Data is concaneted and ready to be replaced")
@@ -96,7 +109,7 @@ def ticket_by_date_chunks(date, tickets, params, variables):
 
     print('Every String replaced by 1 and passed to numeric')        
 
-    set_size = 149000
+    set_size = 249000
     full_data_matrix = full_data.values
     #X_train = full_data_matrix[0:set_size]
    
@@ -128,11 +141,21 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     print('model created')
     
     model = Sequential()
-    model.add(Dense(256, activation='tanh', input_dim=input_dim))
+    model.add(Dense(128, activation='relu', input_dim=input_dim))
     model.add(Dropout(0.5))
-    model.add(Dense(256, activation='tanh'))
+    model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(256, activation='tanh'))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes, activation='softmax'))
     
@@ -157,11 +180,11 @@ def ticket_by_date_chunks(date, tickets, params, variables):
     for s in ynew:
         res.append(labels[s])
     #print(X_test)
-    return res
+    return res #[int(len(res)/3)]
 
 #model.fit(X_train, ytrain, epochs=20, batch_size=16, validation_split=0.1, verbose=2)
     
-print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_05_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
+print(ticket_by_date_chunks("\"2020-01-24 22:34:00\"", 'bertrand_02_2020.csv', 'bertrand_03_2020.csv', 'bertrand_05_2020.csv', 'osiris_params.csv', 'ia_nokia4gj2.csv'))
 
 '''
 

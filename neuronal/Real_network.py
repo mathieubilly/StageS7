@@ -139,30 +139,29 @@ def ticket_by_date_chunks(date, tickets, tickets2, tickets3, params, variables):
   
     #print(X_train.shape)
     print('model created')
-    
+   
+    activation_hidden = 'tanh' 
     model = Sequential()
-    model.add(Dense(128, activation='relu', input_dim=input_dim))
+    model.add(Dense(64, activation=activation_hidden, input_dim=input_dim))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation=activation_hidden))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation=activation_hidden))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation=activation_hidden))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation=activation_hidden))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation=activation_hidden))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation=activation_hidden))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(64, activation=activation_hidden))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes, activation='softmax'))
     
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    #print("Xtrain dims ar [", X_train.shape[0],X_train.shape[1],"]")     
-    #print("ytrain dims ar [", ytrain.shape[0],ytrain.shape[1],"]")  
-   
+       
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
     #res = model.predict_on_batch(X_train)   
@@ -170,17 +169,12 @@ def ticket_by_date_chunks(date, tickets, tickets2, tickets3, params, variables):
 
     #print(check_matrix(X_train[80000:81000]))    
     
-    model.fit(X_train, y_train, epochs=100, batch_size=64)
+    model.fit(X_train, y_train, epochs=50, batch_size=128)
     #score = model.evaluate(X_test, ytest, batch_size=128)      
 
     ynew = model.predict_classes(X_test)
     
-    res = []
-    
-    for s in ynew:
-        res.append(labels[s])
-    #print(X_test)
-    return res #[int(len(res)/3)]
+    return labels[ynew[12]]
 
 #model.fit(X_train, ytrain, epochs=20, batch_size=16, validation_split=0.1, verbose=2)
     
